@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>Visora — Industrial Knowledge Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">
+      <div class="navbar-logo-mark">V</div>
+      <span class="navbar-wordmark">Visora</span>
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-icon-btn">
+        <i data-lucide="settings" style="width:16px;height:16px;"></i>
+      </div>
+      <div class="navbar-avatar">TW</div>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main style="padding-top:60px;">
+    <div class="page-header">
+      <h1>Industrial Machines</h1>
+      <p>Select a machine to view its knowledge base and maintenance history</p>
+    </div>
+
+    <div class="search-filter-bar">
+      <div class="search-wrapper">
+        <span class="search-icon">
+          <i data-lucide="search" style="width:15px;height:15px;"></i>
+        </span>
+        <input type="text" class="search-input" placeholder="Search machines...">
+      </div>
+      <div class="filter-group">
+        <select class="filter-select">
+          <option>All Departments</option>
+          <option>Manufacturing A</option>
+          <option>Manufacturing B</option>
+          <option>Assembly Line A</option>
+          <option>Assembly Line B</option>
+          <option>Utilities</option>
+          <option>Fabrication</option>
+          <option>Warehouse</option>
+          <option>Production</option>
+          <option>Finishing</option>
+        </select>
+        <select class="filter-select">
+          <option>All Statuses</option>
+          <option>Operational</option>
+          <option>Under Maintenance</option>
+          <option>Out of Service</option>
+        </select>
+        <select class="filter-select">
+          <option>All Types</option>
+          <option>CNC</option>
+          <option>Conveyor</option>
+          <option>Hydraulic</option>
+          <option>Robotics</option>
+          <option>Pneumatic</option>
+          <option>Laser</option>
+          <option>Crane</option>
+          <option>Molding</option>
+          <option>Power</option>
+          <option>Drilling</option>
+          <option>Painting</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="machine-grid" id="machineGrid"></div>
+
+    <div class="pagination">
+      <button class="pagination-btn" id="prevBtn" disabled>
+        <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
+      </button>
+      <span class="pagination-info" id="pageInfo">Page 1 of 2</span>
+      <button class="pagination-btn" id="nextBtn">
+        <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+  </main>
+
+  <!-- Machine Card Popup Modal -->
+  <div class="modal-backdrop" id="cardModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <button class="modal-close" id="modalClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div id="modalImageWrap"></div>
+      <div class="modal-body">
+        <div class="modal-status-row">
+          <div class="modal-status-badge" id="modalStatusBadge"></div>
+          <span class="modal-type-badge" id="modalTypeBadge"></span>
+        </div>
+        <div class="modal-name" id="modalName"></div>
+        <div class="modal-divider"></div>
+        <div class="modal-info-row">
+          <span class="label">📍 Department</span>
+          <span class="value" id="modalDept"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">🔧 Type</span>
+          <span class="value" id="modalType"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">📅 Last Serviced</span>
+          <span class="value" id="modalLastServiced"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">⏱ Avg Downtime</span>
+          <span class="value" id="modalAvgDowntime"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="label">📹 Sessions Recorded</span>
+          <span class="value" id="modalSessions"></span>
+        </div>
+        <div class="modal-actions">
+          <a href="#" class="btn-ai" id="modalAiBtn">
+            <i data-lucide="zap" style="width:13px;height:13px;"></i>
+            Ask AI
+          </a>
+          <a href="#" class="btn-details" id="modalDetailsBtn">
+            View Details →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="data.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

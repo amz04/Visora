@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280">
+  <title>Visora — Machine Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">
+      <div class="navbar-logo-mark">V</div>
+      <span class="navbar-wordmark">Visora</span>
+    </a>
+    <div class="navbar-actions">
+      <div class="navbar-icon-btn">
+        <i data-lucide="settings" style="width:16px;height:16px;"></i>
+      </div>
+      <div class="navbar-avatar">TW</div>
+    </div>
+  </nav>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">Machines</a>
+    <span class="breadcrumb-sep"><i data-lucide="chevron-right" style="width:12px;height:12px;"></i></span>
+    <span class="breadcrumb-current" id="breadcrumbMachine">Loading...</span>
+  </div>
+
+  <!-- Three-panel layout -->
+  <div class="details-layout">
+
+    <!-- Left Panel Wrapper -->
+    <div class="panel-left-wrapper">
+      <div class="panel-left" id="panelLeft">
+        <div class="panel-header">
+          <span class="panel-header-title">Maintenance Log</span>
+          <button class="panel-icon-btn" title="Filter">
+            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i>
+          </button>
+        </div>
+        <div class="log-scroll" id="logScroll"></div>
+      </div>
+      <button class="panel-collapse-btn" id="collapseBtn" title="Collapse panel">
+        <i data-lucide="chevron-left" style="width:14px;height:14px;" id="collapseIcon"></i>
+      </button>
+    </div>
+
+    <!-- Middle Panel — Chat -->
+    <div class="panel-middle" id="panelMiddle">
+      <div class="chat-machine-header">
+        <div class="chat-machine-thumb" id="chatThumb">
+          <i data-lucide="cpu" style="width:20px;height:20px;"></i>
+        </div>
+        <div class="chat-machine-info">
+          <div class="chat-machine-name" id="chatMachineName">Loading...</div>
+          <div class="chat-machine-sub">AI Assistant — specialized for this machine</div>
+        </div>
+        <div class="chat-machine-status" id="chatMachineStatus">
+          <div class="dot"></div>
+          <span id="chatStatusText">Operational</span>
+        </div>
+      </div>
+
+      <div class="chat-area" id="chatArea"></div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Ask about this machine...">
+          <button class="chat-send-btn" id="chatSendBtn">
+            <i data-lucide="send" style="width:16px;height:16px;"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel — Videos -->
+    <div class="panel-right">
+      <div class="panel-header">
+        <span class="panel-header-title">Recordings</span>
+        <button class="panel-icon-btn" title="Sort">
+          <i data-lucide="arrow-up-down" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div class="video-scroll" id="videoScroll"></div>
+    </div>
+
+  </div>
+
+  <!-- Session Detail Overlay -->
+  <div class="overlay-backdrop" id="sessionOverlay">
+    <div class="session-overlay">
+      <div class="session-overlay-header">
+        <button class="overlay-back-btn" id="sessionOverlayBack">
+          <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+          Back
+        </button>
+        <button class="overlay-close-btn" id="sessionOverlayClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div class="session-overlay-body" id="sessionOverlayBody"></div>
+    </div>
+  </div>
+
+  <!-- Video Preview Overlay -->
+  <div class="video-overlay-backdrop" id="videoOverlay">
+    <div class="video-overlay">
+      <div class="video-overlay-header">
+        <button class="overlay-close-btn" id="videoOverlayClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div class="video-overlay-body">
+
+        <!-- Video Player Section -->
+        <div class="video-player-section">
+          <div class="video-player-wrapper">
+            <video id="videoEl" preload="metadata" style="width:100%;height:100%;object-fit:contain;"></video>
+          </div>
+          <div class="custom-controls">
+            <div class="progress-bar-wrapper" id="progressBarWrapper">
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+              <div id="chapterDots"></div>
+            </div>
+            <div class="controls-row">
+              <button class="ctrl-btn" id="skipBackBtn" title="Skip back 10s">
+                <i data-lucide="skip-back" style="width:15px;height:15px;"></i>
+              </button>
+              <button class="ctrl-btn play-pause" id="playPauseBtn">
+                <i data-lucide="play" style="width:15px;height:15px;" id="playPauseIcon"></i>
+              </button>
+              <button class="ctrl-btn" id="skipFwdBtn" title="Skip forward 10s">
+                <i data-lucide="skip-forward" style="width:15px;height:15px;"></i>
+              </button>
+              <div class="volume-wrapper">
+                <button class="ctrl-btn" id="muteBtn">
+                  <i data-lucide="volume-2" style="width:15px;height:15px;" id="volumeIcon"></i>
+                </button>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+              </div>
+              <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+              <div style="flex:1;"></div>
+              <select class="speed-select" id="speedSelect">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+              </select>
+              <button class="ctrl-btn" id="fullscreenBtn" title="Fullscreen">
+                <i data-lucide="maximize-2" style="width:15px;height:15px;"></i>
+              </button>
+            </div>
+          </div>
+          <div class="video-meta" id="videoMeta"></div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="video-info-section">
+          <div class="video-tabs">
+            <button class="video-tab active" data-tab="overview">Overview</button>
+            <button class="video-tab" data-tab="steps">Steps</button>
+            <button class="video-tab" data-tab="resources">Resources</button>
+          </div>
+          <div class="video-tab-content">
+            <div class="tab-pane active" id="tab-overview"></div>
+            <div class="tab-pane" id="tab-steps"></div>
+            <div class="tab-pane" id="tab-resources"></div>
+          </div>
+          <div class="related-sessions-section" id="relatedSessions"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="data.js"></script>
+  <script src="machine.js"></script>
+</body>
+</html>
