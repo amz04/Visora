@@ -395,16 +395,15 @@ function renderChapterDots(session) {
   dotsContainer.innerHTML = '';
   if (!session || !session.timestamps) return;
 
-  session.timestamps.forEach(ts => {
-    const duration = currentVideo ? currentVideo.durationSecs : 1;
-    const pct = (ts.time / duration) * 100;
+  session.timestamps.forEach((ts, index) => {
+    const pct = getTimestampPercent(index, session.timestamps.length);
     const dot = document.createElement('div');
     dot.className = 'chapter-dot';
-    dot.style.left = `${pct}%`;
+    dot.style.left = `${Math.min(pct, 98)}%`;
     dot.innerHTML = `<div class="chapter-tooltip">${formatTime(ts.time)} — ${ts.label}</div>`;
     dot.addEventListener('click', (e) => {
       e.stopPropagation();
-      videoEl.currentTime = ts.time;
+      seekVideoFraction(pct / 100);
     });
     dotsContainer.appendChild(dot);
   });
@@ -432,6 +431,7 @@ function renderVideoTabs(video, session) {
   if (session && session.timestamps) {
     const stepsHtml = session.timestamps.map((ts, i) => {
       const stepDesc = session.steps[i] || ts.label;
+      const pct = getTimestampPercent(i, session.timestamps.length);
       return `
         <div class="timestamp-step">
           <span class="timestamp-link" onclick="seekVideo(${ts.time})">${formatTime(ts.time)} →</span>
@@ -536,30 +536,36 @@ document.getElementById('skipBackBtn').addEventListener('click', () => {
   videoEl.currentTime = Math.max(0, videoEl.currentTime - 10);
 });
 document.getElementById('skipFwdBtn').addEventListener('click', () => {
-  videoEl.currentTime += 10;
+  const duration = Number.isFinite(videoEl.duration) ? videoEl.duration : 0;
+  videoEl.currentTime = duration > 0
+    ? Math.min(duration, videoEl.currentTime + 10)
+    : videoEl.currentTime + 10;
 });
 
-function seekToFraction(clientX) {
+function seekToClientX(clientX) {
   const bar = document.getElementById('progressBarWrapper');
   const rect = bar.getBoundingClientRect();
-  const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  if (videoEl.duration && !isNaN(videoEl.duration)) {
-    videoEl.currentTime = pct * videoEl.duration;
-  }
+  const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  seekVideoFraction(fraction);
 }
 
 let isScrubbing = false;
+const progressBar = document.getElementById('progressBarWrapper');
 
-document.getElementById('progressBarWrapper').addEventListener('mousedown', (e) => {
+progressBar.addEventListener('pointerdown', (e) => {
   isScrubbing = true;
-  seekToFraction(e.clientX);
+  seekToClientX(e.clientX);
+  progressBar.setPointerCapture?.(e.pointerId);
   e.preventDefault();
 });
-document.addEventListener('mousemove', (e) => {
-  if (isScrubbing) seekToFraction(e.clientX);
+document.addEventListener('pointermove', (e) => {
+  if (isScrubbing) seekToClientX(e.clientX);
 });
-document.addEventListener('mouseup', () => {
+document.addEventListener('pointerup', () => {
   isScrubbing = false;
+});
+progressBar.addEventListener('click', (e) => {
+  seekToClientX(e.clientX);
 });
 
 document.getElementById('volumeSlider').addEventListener('input', (e) => {
@@ -594,9 +600,33 @@ document.getElementById('fullscreenBtn').addEventListener('click', () => {
   else wrapper.requestFullscreen();
 });
 
+function getTimestampPercent(index, total) {
+  if (!total || total <= 0) return 0;
+  return Math.round(((index + 1) / total) * 100);
+}
+
+function seekVideoFraction(fraction) {
+  if (videoEl.duration && Number.isFinite(videoEl.duration)) {
+    const clamped = Math.max(0, Math.min(1, fraction));
+    videoEl.currentTime = clamped * videoEl.duration;
+    if (videoEl.paused) videoEl.play();
+    updatePlayPauseIcon();
+  }
+}
+
 function seekVideo(time) {
-  if (videoEl.duration) {
-    videoEl.currentTime = time;
+  const session = currentVideo
+    ? machine.sessions.find((item) => item.id === currentVideo.sessionId)
+    : null;
+  const timestampIndex = session?.timestamps?.findIndex((ts) => ts.time === time) ?? -1;
+
+  if (timestampIndex >= 0) {
+    seekVideoFraction(getTimestampPercent(timestampIndex, session.timestamps.length) / 100);
+    return;
+  }
+
+  if (videoEl.duration && Number.isFinite(videoEl.duration)) {
+    videoEl.currentTime = Math.max(0, Math.min(videoEl.duration, time));
     if (videoEl.paused) videoEl.play();
     updatePlayPauseIcon();
   }

@@ -1,8 +1,8 @@
-// ── Visora RAG Pipeline ──────────────────────────────────────────────────────
+// Visora RAG Pipeline
 // Cohere (embeddings) + Groq (LLM) + PDF.js (PDF parsing)
 // All API calls are made directly from the browser.
 
-const COHERE_API_KEY   = 'drT9g43z4IU7fnO1VEdQjQgEvMoZ7Ob6ah4ujesk';
+const COHERE_API_KEY   = 'ECSZWCTF5I3aWj2setbXueduLHu2OFXbUGeSmUQR';
 const GROQ_API_KEY     = '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';
 const COHERE_EMBED_URL = 'https://api.cohere.com/v2/embed';
 const GROQ_CHAT_URL    = 'https://api.groq.com/openai/v1/chat/completions';
@@ -11,18 +11,49 @@ const GROQ_MODEL       = 'llama-3.3-70b-versatile';
 const SIMILARITY_THRESHOLD = 0.35;
 const TOP_K                = 3;
 const EMBED_BATCH_SIZE     = 90;
-const CACHE_VERSION        = 'visora_embeddings_v2';
+const CACHE_VERSION        = 'visora_embeddings_v3';
 
 const MANUAL_MAP = {
-  1: { path: 'assets/manuals/CNC-Milling-Machine-Manual-2023.pdf',  title: 'CNC Milling Machine Manual' },
-  2: { path: 'assets/manuals/Belt-Conveyor-Manual-2022.pdf',         title: 'Belt Conveyor System Manual' }
+  1: {
+    manual: {
+      path: 'assets/manuals/CNC-Milling-Machine-Manual-2023.pdf',
+      title: '📄 CNC Milling Machine Manual',
+      sourceType: 'Manual'
+    },
+    reports: [
+      {
+        path: 'assets/reports/CNC-Report-1.pdf',
+        title: '🔧 CNC Maintenance Report 1',
+        sourceType: 'Maintenance Report'
+      },
+      {
+        path: 'assets/reports/CNC-Report-2.pdf',
+        title: '🔧 CNC Maintenance Report 2',
+        sourceType: 'Maintenance Report'
+      }
+    ]
+  },
+  2: {
+    manual: {
+      path: 'assets/manuals/Belt-Conveyor-Manual-2022.pdf',
+      title: '📄 Belt Conveyor System Manual',
+      sourceType: 'Manual'
+    },
+    reports: [
+      {
+        path: 'assets/reports/Conveyer-belt-report-1.pdf',
+        title: '🔧 Conveyor Belt Maintenance Report 1',
+        sourceType: 'Maintenance Report'
+      }
+    ]
+  }
 };
 
-// ── PDF Parsing ───────────────────────────────────────────────────────────────
+// PDF Parsing
 
 async function loadAndParsePDF(url) {
   if (typeof pdfjsLib === 'undefined') {
-    throw new Error('PDF.js not loaded — make sure the CDN script tag is present.');
+    throw new Error('PDF.js not loaded - make sure the CDN script tag is present.');
   }
   const loadingTask = pdfjsLib.getDocument({ url });
   const pdf = await loadingTask.promise;
@@ -36,9 +67,9 @@ async function loadAndParsePDF(url) {
   return pageTexts;
 }
 
-// ── Chunking ──────────────────────────────────────────────────────────────────
+// Chunking
 
-function chunkPageTexts(pageTexts, machineId, manualTitle) {
+function chunkPageTexts(pageTexts, machineId, documentMeta) {
   // Build full text and record where each page starts
   let fullText = '';
   const pageStartOffsets = [];
@@ -93,19 +124,24 @@ function chunkPageTexts(pageTexts, machineId, manualTitle) {
 
     const startOffset = sentenceOffsets[i] ?? 0;
     const page = pageForOffset(startOffset);
-    const excerpt = text.length > 120 ? text.slice(0, 120) + '…' : text;
+    const excerpt = text.length > 120 ? text.slice(0, 120) + '...' : text;
 
     chunks.push({
       text,
       machineId,
-      source: { title: manualTitle, page, excerpt }
+      source: {
+        title: documentMeta.title,
+        type: documentMeta.sourceType,
+        page,
+        excerpt
+      }
     });
   }
 
   return chunks;
 }
 
-// ── Cohere Embeddings ─────────────────────────────────────────────────────────
+// Cohere Embeddings
 
 async function embedTexts(texts, inputType) {
   const response = await fetch(COHERE_EMBED_URL, {
@@ -143,18 +179,54 @@ async function embedInBatches(texts, inputType) {
   return allVectors;
 }
 
-// ── localStorage Cache ────────────────────────────────────────────────────────
+// localStorage Cache
 
-function cacheKey(machineId) {
-  return `${CACHE_VERSION}_machine${machineId}`;
+function buildDocumentList(machineId) {
+  const config = MANUAL_MAP[machineId];
+  if (!config) return [];
+  return [config.manual, ...(config.reports || [])];
 }
 
-function loadFromCache(machineId) {
+function normaliseText(text) {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+function simpleHash(text) {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+  }
+  return (hash >>> 0).toString(16);
+}
+
+function buildDocumentFingerprint(documents, pageTextsList) {
+  return documents.map((document, index) => {
+    const pageTexts = pageTextsList[index];
+    const normalisedText = pageTexts.map(normaliseText).join('\n');
+    return [
+      document.sourceType,
+      document.title,
+      document.path,
+      pageTexts.length,
+      simpleHash(normalisedText)
+    ].join('|');
+  }).join('||');
+}
+
+function cacheKey(machineId, documents) {
+  const docSignature = documents
+    .map(doc => `${doc.sourceType}:${doc.path}:${doc.title}`)
+    .join('|');
+  return `${CACHE_VERSION}_machine${machineId}_${simpleHash(docSignature)}`;
+}
+
+function loadFromCache(machineId, documents, fingerprint) {
   try {
-    const raw = localStorage.getItem(cacheKey(machineId));
+    const raw = localStorage.getItem(cacheKey(machineId, documents));
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!parsed.chunks || !parsed.embeddings) return null;
+    if (!parsed.chunks || !parsed.embeddings || parsed.fingerprint !== fingerprint) return null;
     // Restore plain arrays back to Float32Array
     const embeddings = parsed.embeddings.map(v => new Float32Array(v));
     return { chunks: parsed.chunks, embeddings };
@@ -163,18 +235,21 @@ function loadFromCache(machineId) {
   }
 }
 
-function saveToCache(machineId, chunks, embeddings) {
+function saveToCache(machineId, documents, fingerprint, chunks, embeddings) {
   try {
-    // Convert Float32Array → plain array for JSON serialisation
+    // Convert Float32Array to plain array for JSON serialisation
     const serialisable = embeddings.map(v => Array.from(v));
-    localStorage.setItem(cacheKey(machineId), JSON.stringify({ chunks, embeddings: serialisable }));
+    localStorage.setItem(
+      cacheKey(machineId, documents),
+      JSON.stringify({ fingerprint, chunks, embeddings: serialisable })
+    );
   } catch (e) {
-    // QuotaExceededError — skip silently, pipeline still works
+    // QuotaExceededError - skip silently, pipeline still works
     console.warn('Visora: could not cache embeddings in localStorage:', e.name);
   }
 }
 
-// ── Retrieval ─────────────────────────────────────────────────────────────────
+// Retrieval
 
 function cosineSimilarity(a, b) {
   let dot = 0, normA = 0, normB = 0;
@@ -198,7 +273,7 @@ function retrieveTopK(queryVec, embeddings, chunks) {
     .slice(0, TOP_K);
 }
 
-// ── Groq Generation ───────────────────────────────────────────────────────────
+// Groq Generation
 
 async function callGroq(userQuery, topChunks) {
   const excerptBlock = topChunks
@@ -224,7 +299,7 @@ async function callGroq(userQuery, topChunks) {
             'Answer ONLY based on the manual excerpts provided in the user message. Do not use outside knowledge. ' +
             'If the excerpts do not contain enough information, say so honestly. ' +
             'Be concise and practical. Use numbered steps when describing procedures. ' +
-            'Do not refer to yourself as an AI or mention "the context" — answer directly as a knowledgeable technician would.'
+            'Do not refer to yourself as an AI or mention "the context" - answer directly as a knowledgeable technician would.'
         },
         { role: 'user', content: userMessage }
       ],
@@ -242,7 +317,7 @@ async function callGroq(userQuery, topChunks) {
   return data.choices[0].message.content;
 }
 
-// ── Primary Entry Point ───────────────────────────────────────────────────────
+// Primary Entry Point
 
 async function queryRAG(machineId, userQuery) {
   // Machines without a manual
@@ -254,18 +329,26 @@ async function queryRAG(machineId, userQuery) {
   }
 
   try {
-    const { path: pdfPath, title: manualTitle } = MANUAL_MAP[machineId];
+    const documents = buildDocumentList(machineId);
+    const pageTextsList = [];
+
+    for (const document of documents) {
+      pageTextsList.push(await loadAndParsePDF(document.path));
+    }
+
+    const fingerprint = buildDocumentFingerprint(documents, pageTextsList);
 
     // Load from cache or build fresh
     let chunks, embeddings;
-    const cached = loadFromCache(machineId);
+    const cached = loadFromCache(machineId, documents, fingerprint);
     if (cached) {
       ({ chunks, embeddings } = cached);
     } else {
-      const pageTexts = await loadAndParsePDF(pdfPath);
-      chunks     = chunkPageTexts(pageTexts, machineId, manualTitle);
+      chunks = documents.flatMap((document, index) =>
+        chunkPageTexts(pageTextsList[index], machineId, document)
+      );
       embeddings = await embedInBatches(chunks.map(c => c.text), 'search_document');
-      saveToCache(machineId, chunks, embeddings);
+      saveToCache(machineId, documents, fingerprint, chunks, embeddings);
     }
 
     // Embed the user query
@@ -293,10 +376,10 @@ async function queryRAG(machineId, userQuery) {
     console.error('Visora RAG error:', err);
 
     if (err.message.includes('PDF.js not loaded')) {
-      return { answer: "Could not load the manual — PDF reader failed to initialise. Please refresh the page.", citations: [] };
+      return { answer: "Could not load the manual - PDF reader failed to initialise. Please refresh the page.", citations: [] };
     }
     if (err.message.startsWith('Cohere embed error (401)')) {
-      return { answer: "Embedding API error — invalid API key. Please check the Cohere key in rag.js.", citations: [] };
+      return { answer: "Embedding API error - invalid API key. Please check the Cohere key in rag.js.", citations: [] };
     }
     if (err.message.startsWith('Cohere embed error (429)')) {
       return { answer: "Embedding API rate limit hit. Please wait a moment and try again.", citations: [] };
@@ -305,13 +388,13 @@ async function queryRAG(machineId, userQuery) {
       return { answer: `Embedding service error: ${err.message}`, citations: [] };
     }
     if (err.message.startsWith('Groq error (401)')) {
-      return { answer: "AI service error — invalid API key. Please check the Groq key in rag.js.", citations: [] };
+      return { answer: "AI service error - invalid API key. Please check the Groq key in rag.js.", citations: [] };
     }
     if (err.message.startsWith('Groq error')) {
       return { answer: `AI service error: ${err.message}`, citations: [] };
     }
     if (err.message.toLowerCase().includes('failed to fetch') || err.message.toLowerCase().includes('networkerror')) {
-      return { answer: "Network error — please check your internet connection and try again.", citations: [] };
+      return { answer: "Network error - please check your internet connection and try again.", citations: [] };
     }
     if (err.message.toLowerCase().includes('pdf')) {
       return { answer: "Could not load the manual PDF. Make sure you're running the app through a local server (e.g. python -m http.server 8000).", citations: [] };

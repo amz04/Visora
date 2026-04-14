@@ -10,7 +10,7 @@ const MACHINES = [
     lastServicedAgo: "4d ago",
     avgDowntime: "2.3 hrs",
     sessionsCount: 4,
-    videosCount: 1,
+    videosCount: 2,
     image: "thumbnails/machine1.jpg",
     sessions: [
       {
@@ -71,7 +71,7 @@ const MACHINES = [
         ],
         tools: ["Grease Gun", "Calibration Tool", "Inspection Checklist"],
         parts: [],
-        videoId: null,
+        videoId: "v1-2",
         month: "APRIL 2025"
       },
       {
@@ -144,12 +144,26 @@ const MACHINES = [
         technician: "Ahmed Al Mansoori",
         date: "March 3, 2025",
         dateShort: "Mar 3",
-        duration: "6:24",
-        durationSecs: 384,
+        duration: "0:52",
+        durationSecs: 52,
         severity: "critical",
-        file: "videos/cnc-milling.mp4",
+        file: "videos/CNC-video-1.mov",
         thumb: "thumbnails/thumb1.jpg",
         sessionId: "s1-1",
+        month: "APRIL 2025"
+      },
+      {
+        id: "v1-2",
+        title: "Routine Inspection & Lubrication",
+        technician: "Sara Mohammed",
+        date: "April 3, 2025",
+        dateShort: "Apr 3",
+        duration: "0:39",
+        durationSecs: 39,
+        severity: "routine",
+        file: "videos/CNC-video-2.mov",
+        thumb: "thumbnails/thumb2.jpg",
+        sessionId: "s1-2",
         month: "APRIL 2025"
       }
     ],
