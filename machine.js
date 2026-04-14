@@ -178,7 +178,19 @@ function renderChatMessages() {
           <div class="chat-msg-bubble">${escapeHtml(msg.text)}</div>
         </div>`;
     } else {
-      const sourceHtml = msg.source ? `<div class="chat-msg-source">⚠ Source: ${msg.source}</div>` : '';
+      let sourceHtml = '';
+      if (msg.source) {
+        if (typeof msg.source === 'string') {
+          // backward compat: existing demo data has plain string sources
+          sourceHtml = `<div class="chat-msg-source">📄 ${escapeHtml(msg.source)}</div>`;
+        } else {
+          // RAG path: { title, excerpt }
+          sourceHtml = `<div class="chat-msg-citation">
+            <div class="chat-msg-citation-title"><span>📄</span> ${escapeHtml(msg.source.title)}</div>
+            ${msg.source.excerpt ? `<div class="chat-msg-citation-excerpt">"${escapeHtml(msg.source.excerpt)}"</div>` : ''}
+          </div>`;
+        }
+      }
       html += `
         <div class="chat-msg ai">
           <div class="chat-msg-bubble">${escapeHtml(msg.text)}</div>
@@ -196,7 +208,7 @@ function sendSuggestion(el) {
   sendMessage();
 }
 
-function sendMessage() {
+async function sendMessage() {
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text || isTyping) return;
@@ -218,12 +230,26 @@ function sendMessage() {
   chatArea.appendChild(typingEl);
   chatArea.scrollTop = chatArea.scrollHeight;
 
-  setTimeout(() => {
-    const indicator = document.getElementById('typingIndicator');
-    if (indicator) indicator.remove();
+  try {
+    const result = await queryRAG(machineId, text);
+    document.getElementById('typingIndicator')?.remove();
     isTyping = false;
+    chatMessages.push({
+      role: 'ai',
+      text: result.answer,
+      source: result.citations.length > 0
+        ? { title: result.citations[0].title, excerpt: result.citations[0].excerpt }
+        : null
+    });
+    renderChatMessages();
     chatArea.scrollTop = chatArea.scrollHeight;
-  }, 1500);
+  } catch (err) {
+    document.getElementById('typingIndicator')?.remove();
+    isTyping = false;
+    chatMessages.push({ role: 'ai', text: 'Something went wrong. Please try again.', source: null });
+    renderChatMessages();
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
 }
 
 document.getElementById('chatSendBtn').addEventListener('click', sendMessage);

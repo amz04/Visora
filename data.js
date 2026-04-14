@@ -181,42 +181,7 @@ const MACHINES = [
         month: "MARCH 2025"
       }
     ],
-    chat: [
-      {
-        role: "user",
-        text: "How do I replace the hydraulic seal on this machine?"
-      },
-      {
-        role: "ai",
-        text: `Here's how to replace the hydraulic seal on the CNC Milling Machine:
-
-1. Power down and lock out the machine completely
-2. Release hydraulic pressure using the pressure relief valve
-3. Remove the access panel on the left side (4 bolts, 12mm wrench)
-4. Locate the seal housing — it's the cylindrical component with two hose connections
-5. Remove the retaining ring using snap ring pliers
-6. Pull out the old seal carefully to avoid scratching the housing
-7. Clean the housing with a lint-free cloth
-8. Press the new seal in evenly — do not use excessive force
-9. Reassemble in reverse order and test pressure before powering on
-
-Tools needed: 12mm wrench, snap ring pliers, lint-free cloth, torque wrench
-
-⚠ Source: CNC Milling Machine Manual, Section 4.2 — Hydraulic System Maintenance`,
-        source: "CNC Milling Machine Manual, Section 4.2"
-      },
-      {
-        role: "user",
-        text: "Is there a video of this repair?"
-      },
-      {
-        role: "ai",
-        text: `Yes — Ahmed Al Mansoori recorded a full repair session on March 3rd that covers exactly this procedure. I've highlighted it in the video panel on the right.
-
-📹 Hydraulic Seal Replacement — March 3rd · 6:24 min`,
-        source: null
-      }
-    ]
+    chat: []
   },
   {
     id: 2,
@@ -352,25 +317,7 @@ Tools needed: 12mm wrench, snap ring pliers, lint-free cloth, torque wrench
         month: "APRIL 2025"
       }
     ],
-    chat: [
-      {
-        role: "user",
-        text: "The belt keeps slipping, what should I check first?"
-      },
-      {
-        role: "ai",
-        text: `Belt slipping on the Conveyor Belt System is usually caused by one of three things:
-
-1. Belt tension too low — check the tensioning bolts at both ends of the conveyor
-2. Worn drive pulley — inspect the pulley surface for glazing or wear
-3. Overloading — verify the load doesn't exceed 450kg per meter
-
-Start with tension. The correct tension reading on this machine should be between 3.5 and 4.2 kN.
-
-⚠ Source: Conveyor Belt System Manual, Section 2.7 — Common Faults`,
-        source: "Conveyor Belt System Manual, Section 2.7"
-      }
-    ]
+    chat: []
   },
   {
     id: 3,
