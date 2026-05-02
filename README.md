@@ -115,9 +115,8 @@ visora/
 ├── style.css                   # Global styles and design tokens
 ├── main.js                     # Homepage logic and interactions
 ├── machine.js                  # Machine details page logic
-├── rag.js                      # RAG HTTP client (calls FastAPI backend)
+├── rag.js                      # RAG HTTP client — defines RAG_API_BASE, calls FastAPI backend
 ├── data.js                     # All hardcoded machines, sessions, and video data
-├── config.js                   # RAG_API_BASE and other client-side config (gitignored)
 ├── .env                        # Server-side secrets: GROQ_API_KEY (gitignored)
 ├── requirements.txt            # Python dependencies
 ├── app/

@@ -1,6 +1,6 @@
 // Visora RAG — thin HTTP client
 // Delegates all pipeline work to the FastAPI backend.
-// RAG_API_BASE is defined in config.js (e.g. 'http://localhost:8000')
+const RAG_API_BASE = 'http://localhost:8000';
 
 async function queryRAG(machineId, userQuery) {
   try {
