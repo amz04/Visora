@@ -171,6 +171,72 @@ const MACHINES = [
         month: "APRIL 2025"
       }
     ],
+    workOrders: [
+      {
+        id: "WO-2025-038",
+        date: "March 28, 2025",
+        dateShort: "Mar 28",
+        type: "Preventive",
+        technician: "Sara Mohammed",
+        department: "Manufacturing A",
+        priority: "Low",
+        machine: "CNC Milling Machine",
+        status: "Closed",
+        description: "Scheduled quarterly preventive maintenance covering spindle lubrication, coolant system flush, axis calibration check, and general mechanical inspection per manufacturer service intervals.",
+        correctiveAction: "Lubricated all spindle bearings, flushed and refilled coolant reservoir, verified axis alignment within tolerance. No corrective action required — machine returned to service.",
+        parts: ["Spindle Lubricant — 500ml", "Coolant Concentrate — Part #CC-100"],
+        estimatedDowntime: "2 hours",
+        actualDowntime: "1 hour 50 minutes",
+      },
+      {
+        id: "WO-2025-041",
+        date: "April 10, 2025",
+        dateShort: "Apr 10",
+        type: "Corrective",
+        technician: "Ahmed Al Mansoori",
+        department: "Manufacturing A",
+        priority: "High",
+        machine: "CNC Milling Machine",
+        status: "Closed",
+        description: "Spindle bearing emitting abnormal vibration and elevated noise during high-speed operation. Issue reported by floor supervisor during shift handover. Machine taken offline immediately.",
+        correctiveAction: "Replaced primary spindle bearing assembly. Performed runout test at 8000 RPM — within spec at 0.003mm. Machine returned to full service after 4-hour soak test.",
+        parts: ["Spindle Bearing Assembly — Part #SBA-774", "Bearing Retaining Ring — Part #RR-209", "Grease Cartridge — Part #GC-55"],
+        estimatedDowntime: "4 hours",
+        actualDowntime: "3 hours 45 minutes",
+      },
+      {
+        id: "WO-2025-055",
+        date: "April 30, 2025",
+        dateShort: "Apr 30",
+        type: "Emergency",
+        technician: "Khalid Hassan",
+        department: "Manufacturing A",
+        priority: "Critical",
+        machine: "CNC Milling Machine",
+        status: "Open",
+        description: "Coolant system pressure loss detected mid-operation. Coolant level indicator triggered fault alarm. Machine halted automatically. Suspected coolant pump seal failure or line breach.",
+        correctiveAction: "Investigation ongoing. Coolant pump removed for bench inspection. Awaiting replacement seal kit from supplier — ETA 2 days. Machine remains offline.",
+        parts: [],
+        estimatedDowntime: "8 hours",
+        actualDowntime: "—",
+      },
+      {
+        id: "WO-2025-057",
+        date: "May 1, 2025",
+        dateShort: "May 1",
+        type: "Corrective",
+        technician: "Ahmed Al Mansoori",
+        department: "Manufacturing A",
+        priority: "Medium",
+        machine: "CNC Milling Machine",
+        status: "Overdue",
+        description: "Tool length calibration drift detected during dimensional inspection of finished parts. Offset error of 0.08mm recorded on Z-axis tool probe. Requires re-calibration and probe replacement.",
+        correctiveAction: "Not yet actioned. Technician assignment confirmed but work order unresolved past target completion date of May 1, 2025.",
+        parts: ["Tool Probe Contact — Part #TP-331"],
+        estimatedDowntime: "1 hour",
+        actualDowntime: "—",
+      },
+    ],
     chat: []
   },
   {
@@ -307,6 +373,56 @@ const MACHINES = [
         month: "APRIL 2025"
       }
     ],
+    workOrders: [
+      {
+        id: "WO-2025-044",
+        date: "April 13, 2025",
+        dateShort: "Apr 13",
+        type: "Corrective",
+        technician: "Sara Mohammed",
+        department: "Assembly Line A",
+        priority: "Medium",
+        machine: "Conveyor Belt System",
+        status: "Closed",
+        description: "Drive belt tension found outside specification during routine check. Belt exhibiting lateral drift on return run, causing intermittent slippage at drive pulley. Production rate reduced by 15%.",
+        correctiveAction: "Re-tensioned drive belt to manufacturer specification of 85 N/m. Adjusted tracking guide on return idler. Verified belt tracking over full cycle. Production restored to normal rate.",
+        parts: ["Belt Tracking Guide — Part #TG-220"],
+        estimatedDowntime: "2 hours",
+        actualDowntime: "1 hour 30 minutes",
+      },
+      {
+        id: "WO-2025-051",
+        date: "April 22, 2025",
+        dateShort: "Apr 22",
+        type: "Inspection",
+        technician: "Omar Al Rashid",
+        department: "Assembly Line A",
+        priority: "Low",
+        machine: "Conveyor Belt System",
+        status: "Closed",
+        description: "Quarterly safety and compliance inspection per maintenance schedule. Covers belt wear, idler condition, drive motor temperature, emergency stop function, and guarding integrity.",
+        correctiveAction: "All systems within acceptable limits. One idler roller showing early wear — flagged for replacement at next scheduled PM. No immediate action required.",
+        parts: [],
+        estimatedDowntime: "1 hour",
+        actualDowntime: "55 minutes",
+      },
+      {
+        id: "WO-2025-058",
+        date: "May 2, 2025",
+        dateShort: "May 2",
+        type: "Emergency",
+        technician: "Khalid Hassan",
+        department: "Assembly Line A",
+        priority: "Critical",
+        machine: "Conveyor Belt System",
+        status: "Overdue",
+        description: "Drive motor thermal protection tripped during peak production. Motor temperature sensor recorded 94°C — 19°C above rated threshold. Suspected blocked cooling vent or failing motor winding.",
+        correctiveAction: "Motor isolated and cooling vent cleared of debris. Awaiting motor winding insulation resistance test. Replacement motor on order — work order past target completion.",
+        parts: ["Drive Motor — Part #DM-881"],
+        estimatedDowntime: "6 hours",
+        actualDowntime: "—",
+      },
+    ],
     chat: []
   },
   {
@@ -324,6 +440,7 @@ const MACHINES = [
     image: "thumbnails/machine3.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -341,6 +458,7 @@ const MACHINES = [
     image: "thumbnails/machine4.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -358,6 +476,7 @@ const MACHINES = [
     image: "thumbnails/machine5.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -375,6 +494,7 @@ const MACHINES = [
     image: "thumbnails/machine1.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -392,6 +512,7 @@ const MACHINES = [
     image: "thumbnails/machine2.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -409,6 +530,7 @@ const MACHINES = [
     image: "thumbnails/machine3.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -426,6 +548,7 @@ const MACHINES = [
     image: "thumbnails/machine4.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -443,6 +566,7 @@ const MACHINES = [
     image: "thumbnails/machine5.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -460,6 +584,7 @@ const MACHINES = [
     image: "thumbnails/machine1.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   },
   {
@@ -477,6 +602,7 @@ const MACHINES = [
     image: "thumbnails/machine2.jpg",
     sessions: [],
     videos: [],
+    workOrders: [],
     chat: []
   }
 ];
