@@ -646,19 +646,76 @@ function seekVideo(time) {
 }
 
 // ── PDF Viewer Overlay ──
-function openPdfOverlay(sourceUrl, page, title) {
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let _pdfDoc = null;
+let _pdfUrl = '';
+let _pdfPage = 1;
+let _pdfTotal = 0;
+let _pdfRendering = false;
+
+async function openPdfOverlay(sourceUrl, page, title) {
   if (!sourceUrl) return;
   document.getElementById('pdfOverlayTitle').textContent = title;
-  document.getElementById('pdfOverlayPage').textContent = `p. ${page}`;
-  document.getElementById('pdfFrame').src = `${sourceUrl}#page=${page}`;
   document.getElementById('pdfOverlay').classList.add('open');
   lucide.createIcons();
+  _pdfPage = page;
+
+  if (_pdfUrl !== sourceUrl) {
+    _pdfUrl = sourceUrl;
+    _pdfDoc = null;
+    setPdfLoading(true);
+    try {
+      _pdfDoc = await pdfjsLib.getDocument(sourceUrl).promise;
+      _pdfTotal = _pdfDoc.numPages;
+    } catch (e) {
+      setPdfLoading(false);
+      return;
+    }
+  }
+  await renderPdfPage(_pdfPage);
+}
+
+async function renderPdfPage(pageNum) {
+  if (!_pdfDoc || _pdfRendering) return;
+  _pdfRendering = true;
+  setPdfLoading(true);
+
+  const page = await _pdfDoc.getPage(pageNum);
+  const wrap = document.getElementById('pdfViewerWrap');
+  const scale = (wrap.clientWidth - 40) / page.getViewport({ scale: 1 }).width;
+  const viewport = page.getViewport({ scale });
+
+  const canvas = document.getElementById('pdfCanvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+  _pdfPage = pageNum;
+  _pdfRendering = false;
+  document.getElementById('pdfNavLabel').textContent = `p. ${pageNum} / ${_pdfTotal}`;
+  document.getElementById('pdfOverlayPage').textContent = `p. ${pageNum}`;
+  document.getElementById('pdfPrevBtn').disabled = pageNum <= 1;
+  document.getElementById('pdfNextBtn').disabled = pageNum >= _pdfTotal;
+  setPdfLoading(false);
+}
+
+function setPdfLoading(show) {
+  document.getElementById('pdfLoading').style.display = show ? 'flex' : 'none';
+  document.getElementById('pdfCanvas').style.display = show ? 'none' : 'block';
 }
 
 function closePdfOverlay() {
   document.getElementById('pdfOverlay').classList.remove('open');
-  document.getElementById('pdfFrame').src = '';
 }
+
+document.getElementById('pdfPrevBtn').addEventListener('click', () => {
+  if (_pdfPage > 1) renderPdfPage(_pdfPage - 1);
+});
+document.getElementById('pdfNextBtn').addEventListener('click', () => {
+  if (_pdfPage < _pdfTotal) renderPdfPage(_pdfPage + 1);
+});
 
 document.getElementById('pdfOverlayClose').addEventListener('click', closePdfOverlay);
 document.getElementById('pdfOverlay').addEventListener('click', (e) => {

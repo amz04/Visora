@@ -193,11 +193,27 @@
         </button>
       </div>
       <div class="pdf-overlay-body">
-        <iframe id="pdfFrame" src="" title="PDF Viewer"></iframe>
+        <div class="pdf-viewer-wrap" id="pdfViewerWrap">
+          <div class="pdf-loading" id="pdfLoading">
+            <div class="pdf-loading-spinner"></div>
+            <span>Loading…</span>
+          </div>
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+        <div class="pdf-nav">
+          <button class="pdf-nav-btn" id="pdfPrevBtn" disabled>
+            <i data-lucide="chevron-left" style="width:14px;height:14px;"></i>
+          </button>
+          <span class="pdf-nav-label" id="pdfNavLabel">—</span>
+          <button class="pdf-nav-btn" id="pdfNextBtn" disabled>
+            <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="config.js"></script>
   <script src="data.js"></script>

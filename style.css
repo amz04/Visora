@@ -1349,13 +1349,88 @@ html, body {
 .pdf-overlay-body {
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.pdf-overlay-body iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+.pdf-viewer-wrap {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+#pdfCanvas {
   display: block;
+  max-width: 100%;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+.pdf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.pdf-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--accent);
+  animation: pdfSpin 0.7s linear infinite;
+}
+
+@keyframes pdfSpin {
+  to { transform: rotate(360deg); }
+}
+
+.pdf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px 18px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pdf-nav-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  padding: 5px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.pdf-nav-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pdf-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.pdf-nav-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  min-width: 80px;
+  text-align: center;
 }
 
 /* ── Video Preview Overlay ── */
