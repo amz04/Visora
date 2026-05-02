@@ -148,8 +148,6 @@ const MACHINES = [
         durationSecs: 52,
         severity: "critical",
         file: "videos/CNC-video-1.mov",
-        summary: "The video demonstrates the procedure for tightening the jaws on a CNC lathe chuck. The operator first tightens the bolts on the jaws using a standard hex wrench, then uses a torque wrench to ensure they are properly secured.",
-        resources: ["Hex wrench", "Torque wrench", "Hex bit"],
         thumb: "thumbnails/thumb1.jpg",
         sessionId: "s1-1",
         month: "APRIL 2025"
@@ -164,8 +162,6 @@ const MACHINES = [
         durationSecs: 39,
         severity: "routine",
         file: "videos/CNC-video-2.mov",
-        summary: "The video shows the procedure for securing a tool holder block onto the turret of a CNC lathe. The operator initially tightens the mounting bolts using a standard hex wrench, followed by a torque wrench to ensure the correct torque specification is met.",
-        resources: ["Hex wrench", "Torque wrench", "Hex bit", "Tool holder block"],
         thumb: "thumbnails/thumb2.jpg",
         sessionId: "s1-2",
         month: "APRIL 2025"
