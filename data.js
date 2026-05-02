@@ -481,6 +481,18 @@ function getMachineById(id) {
   return MACHINES.find(m => m.id === id) || null;
 }
 
+function getEffectiveStatus(machineId) {
+  const overrides = JSON.parse(localStorage.getItem('visora_status') || '{}');
+  const machine = getMachineById(machineId);
+  return overrides[machineId] || (machine ? machine.status : 'operational');
+}
+
+function setMachineStatus(machineId, status) {
+  const overrides = JSON.parse(localStorage.getItem('visora_status') || '{}');
+  overrides[machineId] = status;
+  localStorage.setItem('visora_status', JSON.stringify(overrides));
+}
+
 function getStatusLabel(status) {
   const map = { operational: "Operational", maintenance: "Under Maintenance", "out-of-service": "Out of Service" };
   return map[status] || status;

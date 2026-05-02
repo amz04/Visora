@@ -1,17 +1,40 @@
 let currentPage = 1;
-const PAGE_SIZE_1 = 8;
-const PAGE_SIZE_2 = 4;
-const TOTAL_PAGES = 2;
+let filteredMachines = [];
+
+function applyFilters() {
+  const q = document.querySelector('.search-input').value.trim().toLowerCase();
+  const deptVal = document.querySelectorAll('.filter-select')[0].value;
+  const statusVal = document.querySelectorAll('.filter-select')[1].value;
+  const typeVal = document.querySelectorAll('.filter-select')[2].value;
+
+  filteredMachines = MACHINES.filter(m => {
+    const effectiveStatus = getEffectiveStatus(m.id);
+    const matchQ = !q || m.name.toLowerCase().includes(q)
+      || m.department.toLowerCase().includes(q)
+      || m.type.toLowerCase().includes(q)
+      || m.location.toLowerCase().includes(q);
+    const matchDept = deptVal === 'All Departments' || m.department === deptVal;
+    const matchStatus = statusVal === 'All Statuses' || getStatusLabel(effectiveStatus) === statusVal;
+    const matchType = typeVal === 'All Types' || m.type === typeVal;
+    return matchQ && matchDept && matchStatus && matchType;
+  });
+
+  currentPage = 1;
+  renderGrid();
+}
 
 function getMachinesForPage(page) {
-  if (page === 1) return MACHINES.slice(0, 8);
-  return MACHINES.slice(8, 12);
+  const start = (page - 1) * 8;
+  return filteredMachines.slice(start, start + 8);
+}
+
+function getTotalPages() {
+  return Math.max(1, Math.ceil(filteredMachines.length / 8));
 }
 
 function renderMachineCard(machine) {
-  const statusClass = getStatusClass(machine.status);
-  const statusLabel = getStatusLabel(machine.status);
-  const machineUrl = `machine.html?id=${machine.id}`;
+  const effectiveStatus = getEffectiveStatus(machine.id);
+  const statusClass = getStatusClass(effectiveStatus);
   const machineUrlChat = `machine.html?id=${machine.id}&focus=chat`;
 
   const imageHtml = machine.image
@@ -37,9 +60,9 @@ function renderMachineCard(machine) {
             <i data-lucide="zap" style="width:12px;height:12px;"></i>
             Ask AI
           </a>
-          <a href="${machineUrl}" class="btn-details" onclick="event.stopPropagation()">
+          <button class="btn-details" onclick="event.stopPropagation(); openModal(${machine.id})">
             Details →
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -49,22 +72,37 @@ function renderMachineCard(machine) {
 function renderGrid() {
   const grid = document.getElementById('machineGrid');
   const machines = getMachinesForPage(currentPage);
-  grid.innerHTML = machines.map(renderMachineCard).join('');
+  if (machines.length === 0) {
+    grid.innerHTML = `<div class="no-results">No machines match your search.</div>`;
+  } else {
+    grid.innerHTML = machines.map(renderMachineCard).join('');
+  }
   lucide.createIcons();
   updatePagination();
 }
 
 function updatePagination() {
+  const total = getTotalPages();
   document.getElementById('prevBtn').disabled = currentPage === 1;
-  document.getElementById('nextBtn').disabled = currentPage === TOTAL_PAGES;
-  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${TOTAL_PAGES}`;
+  document.getElementById('nextBtn').disabled = currentPage === total;
+  document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${total}`;
 }
 
 document.getElementById('prevBtn').addEventListener('click', () => {
   if (currentPage > 1) { currentPage--; renderGrid(); }
 });
 document.getElementById('nextBtn').addEventListener('click', () => {
-  if (currentPage < TOTAL_PAGES) { currentPage++; renderGrid(); }
+  if (currentPage < getTotalPages()) { currentPage++; renderGrid(); }
+});
+
+// Search + filter wiring
+let searchDebounce = null;
+document.querySelector('.search-input').addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(applyFilters, 200);
+});
+document.querySelectorAll('.filter-select').forEach(sel => {
+  sel.addEventListener('change', applyFilters);
 });
 
 // Modal
@@ -75,9 +113,9 @@ function openModal(machineId) {
   if (!machine) return;
   activeModalId = machineId;
 
-  const statusClass = getStatusClass(machine.status);
-  const statusLabel = getStatusLabel(machine.status);
-  const statusColor = getStatusColor(machine.status);
+  const effectiveStatus = getEffectiveStatus(machineId);
+  const statusColor = getStatusColor(effectiveStatus);
+  const statusLabel = getStatusLabel(effectiveStatus);
 
   const imageWrap = document.getElementById('modalImageWrap');
   if (machine.image) {
@@ -101,9 +139,7 @@ function openModal(machineId) {
   document.getElementById('modalAvgDowntime').textContent = machine.avgDowntime;
   document.getElementById('modalSessions').textContent = `${machine.sessionsCount} sessions`;
 
-  const machineUrl = `machine.html?id=${machine.id}`;
   document.getElementById('modalAiBtn').href = `machine.html?id=${machine.id}&focus=chat`;
-  document.getElementById('modalDetailsBtn').href = machineUrl;
 
   document.getElementById('cardModal').classList.add('open');
   lucide.createIcons();
@@ -122,4 +158,4 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeModal();
 });
 
-renderGrid();
+applyFilters();

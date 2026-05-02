@@ -11,20 +11,10 @@ if (!machine) {
 function initPage() {
   document.title = `Visora — ${machine.name}`;
   document.getElementById('breadcrumbMachine').textContent = machine.name;
-
-  const statusColor = getStatusColor(machine.status);
-  const statusLabel = getStatusLabel(machine.status);
-
   document.getElementById('chatMachineName').textContent = machine.name;
-  document.getElementById('chatStatusText').textContent = statusLabel;
 
-  const statusEl = document.getElementById('chatMachineStatus');
-  statusEl.style.color = statusColor;
-  const dot = statusEl.querySelector('.dot');
-  dot.style.background = statusColor;
-  if (machine.status !== 'operational') {
-    dot.style.animation = 'none';
-  }
+  applyStatusUI(getEffectiveStatus(machineId));
+  setupStatusDropdown();
 
   renderLog();
   renderVideos();
@@ -35,6 +25,57 @@ function initPage() {
   }
 
   lucide.createIcons();
+}
+
+function applyStatusUI(status) {
+  const statusColor = getStatusColor(status);
+  const statusLabel = getStatusLabel(status);
+  document.getElementById('chatStatusText').textContent = statusLabel;
+  const statusEl = document.getElementById('chatMachineStatus');
+  statusEl.style.color = statusColor;
+  const dot = statusEl.querySelector('.dot');
+  dot.style.background = statusColor;
+  dot.style.animation = status === 'operational' ? '' : 'none';
+}
+
+// ── Status dropdown ──
+const STATUS_OPTIONS = [
+  { value: 'operational',    label: 'Operational',       color: '#22C55E' },
+  { value: 'maintenance',    label: 'Under Maintenance',  color: '#F59E0B' },
+  { value: 'out-of-service', label: 'Out of Service',     color: '#EF4444' },
+];
+
+function setupStatusDropdown() {
+  const trigger = document.getElementById('chatMachineStatus');
+  trigger.classList.add('status-trigger');
+
+  const dropdown = document.createElement('div');
+  dropdown.className = 'status-dropdown';
+  dropdown.innerHTML = STATUS_OPTIONS.map(o => `
+    <button class="status-option" data-value="${o.value}">
+      <span class="status-option-dot" style="background:${o.color};"></span>
+      ${o.label}
+    </button>
+  `).join('');
+
+  trigger.appendChild(dropdown);
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('open');
+  });
+
+  dropdown.querySelectorAll('.status-option').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newStatus = btn.dataset.value;
+      setMachineStatus(machineId, newStatus);
+      applyStatusUI(newStatus);
+      dropdown.classList.remove('open');
+    });
+  });
+
+  document.addEventListener('click', () => dropdown.classList.remove('open'));
 }
 
 // ── Left Panel Collapse ──
