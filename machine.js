@@ -17,6 +17,7 @@ function initPage() {
   setupStatusDropdown();
 
   renderLog();
+  renderWorkOrders();
   renderVideos();
   renderChat();
 
@@ -132,6 +133,177 @@ function renderLog() {
 
   container.innerHTML = html;
 }
+
+// ── Inspection Log Modal ──
+let _woFromModal = false;
+
+function renderWorkOrders() {
+  document.getElementById('viewInspectionLogBtn').addEventListener('click', openInspectionLogModal);
+}
+
+function openInspectionLogModal() {
+  const year = (machine.lastServiced || '').split(', ')[1] || '—';
+  const machineIdLabel = `MID-${String(machine.id).padStart(4, '0')}`;
+
+  document.getElementById('inspEquipmentGrid').innerHTML = `
+    <div class="insp-equip-field">
+      <div class="insp-equip-label">Equipment</div>
+      <div class="insp-equip-value">${machine.name}</div>
+    </div>
+    <div class="insp-equip-field">
+      <div class="insp-equip-label">Machine ID</div>
+      <div class="insp-equip-value mono">${machineIdLabel}</div>
+    </div>
+    <div class="insp-equip-field">
+      <div class="insp-equip-label">Location</div>
+      <div class="insp-equip-value">${machine.location || '—'}</div>
+    </div>
+    <div class="insp-equip-field">
+      <div class="insp-equip-label">Department</div>
+      <div class="insp-equip-value">${machine.department}</div>
+    </div>
+    <div class="insp-equip-field">
+      <div class="insp-equip-label">Year</div>
+      <div class="insp-equip-value mono">${year}</div>
+    </div>
+  `;
+
+  const orders = machine.workOrders || [];
+  if (orders.length === 0) {
+    document.getElementById('inspTableWrap').innerHTML = `
+      <div class="insp-empty">
+        <i data-lucide="clipboard-x" style="width:28px;height:28px;"></i>
+        No work orders available
+      </div>`;
+  } else {
+    let html = `
+      <div class="insp-wo-header">
+        <span class="insp-col-label">WO #</span>
+        <span class="insp-col-label">Date</span>
+        <span class="insp-col-label">Type</span>
+        <span class="insp-col-label">Technician</span>
+        <span class="insp-col-label">Time Taken</span>
+        <span class="insp-col-label">Status</span>
+      </div>`;
+    orders.forEach(wo => {
+      const timeTaken = wo.actualDowntime || wo.estimatedDowntime || '—';
+      const statusClass = wo.status.toLowerCase();
+      html += `
+        <div class="insp-wo-row" onclick="openWorkOrderOverlay('${wo.id}', true)">
+          <span class="insp-wo-num">${wo.id.replace('WO-2025-', '#')}</span>
+          <span class="insp-wo-cell">${wo.dateShort}</span>
+          <span class="insp-wo-cell">${wo.type}</span>
+          <span class="insp-wo-cell">${wo.technician}</span>
+          <span class="insp-wo-cell">${timeTaken}</span>
+          <span class="wo-badge ${statusClass}">${wo.status}</span>
+        </div>`;
+    });
+    document.getElementById('inspTableWrap').innerHTML = html;
+  }
+
+  document.getElementById('inspectionLogModal').classList.add('open');
+  lucide.createIcons();
+}
+
+function closeInspectionLogModal() {
+  document.getElementById('inspectionLogModal').classList.remove('open');
+}
+
+document.getElementById('inspModalClose').addEventListener('click', closeInspectionLogModal);
+document.getElementById('inspectionLogModal').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('inspectionLogModal')) closeInspectionLogModal();
+});
+
+// ── Work Order Detail Overlay ──
+function openWorkOrderOverlay(woId, fromModal = false) {
+  _woFromModal = fromModal;
+  if (fromModal) closeInspectionLogModal();
+  const wo = (machine.workOrders || []).find(w => w.id === woId);
+  if (!wo) return;
+
+  const statusClass = wo.status.toLowerCase();
+  const partsHtml = wo.parts.length > 0
+    ? wo.parts.map(p => `<span class="pill-tag">${p}</span>`).join('')
+    : '<span style="color:var(--text-muted);font-size:13px;">None</span>';
+
+  document.getElementById('woOverlayBody').innerHTML = `
+    <div style="position:relative;">
+      <div class="wo-form-number">${wo.id}</div>
+      <div class="wo-overlay-title">${wo.type} Work Order</div>
+      <div class="session-overlay-subtitle">${wo.date} · ${wo.department}</div>
+      <div class="wo-status-stamp ${statusClass}">${wo.status}</div>
+    </div>
+
+    <div class="session-overlay-divider"></div>
+
+    <div class="wo-form-grid">
+      <div class="wo-form-field">
+        <div class="wo-form-label">Machine</div>
+        <div class="wo-form-value">${wo.machine}</div>
+      </div>
+      <div class="wo-form-field">
+        <div class="wo-form-label">Priority</div>
+        <div class="wo-form-value">${wo.priority}</div>
+      </div>
+      <div class="wo-form-field">
+        <div class="wo-form-label">Type</div>
+        <div class="wo-form-value">${wo.type}</div>
+      </div>
+      <div class="wo-form-field">
+        <div class="wo-form-label">Assigned Technician</div>
+        <div class="wo-form-value">${wo.technician}</div>
+      </div>
+      <div class="wo-form-field">
+        <div class="wo-form-label">Estimated Downtime</div>
+        <div class="wo-form-value">${wo.estimatedDowntime}</div>
+      </div>
+      <div class="wo-form-field">
+        <div class="wo-form-label">Actual Downtime</div>
+        <div class="wo-form-value">${wo.actualDowntime}</div>
+      </div>
+      <div class="wo-form-field full">
+        <div class="wo-form-label">Description</div>
+        <div class="wo-form-value">${wo.description}</div>
+      </div>
+      <div class="wo-form-field full">
+        <div class="wo-form-label">Corrective Action Taken</div>
+        <div class="wo-form-value">${wo.correctiveAction}</div>
+      </div>
+      <div class="wo-form-field full">
+        <div class="wo-form-label">Parts Used</div>
+        <div class="pill-tags">${partsHtml}</div>
+      </div>
+    </div>
+
+    <div class="wo-sig-section">
+      <div style="flex:1;">
+        <div class="wo-sig-line">${wo.technician}</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);">Technician Signature</div>
+      </div>
+      <div style="flex:1;">
+        <div class="wo-sig-line">${wo.status === 'Closed' ? wo.date : '—'}</div>
+        <div style="font-size:var(--text-xs);color:var(--text-muted);">Date Completed</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('workOrderOverlay').classList.add('open');
+  lucide.createIcons();
+}
+
+function closeWorkOrderOverlay() {
+  document.getElementById('workOrderOverlay').classList.remove('open');
+  if (_woFromModal) {
+    _woFromModal = false;
+    openInspectionLogModal();
+  }
+}
+
+document.getElementById('woOverlayBack').addEventListener('click', closeWorkOrderOverlay);
+document.getElementById('woOverlayClose').addEventListener('click', closeWorkOrderOverlay);
+document.getElementById('workOrderOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('workOrderOverlay')) closeWorkOrderOverlay();
+});
 
 // ── Videos Panel ──
 function renderVideos() {
@@ -774,6 +946,8 @@ document.addEventListener('keydown', (e) => {
     if (document.getElementById('pdfOverlay').classList.contains('open')) closePdfOverlay();
     else if (document.getElementById('videoOverlay').classList.contains('open')) closeVideoOverlay();
     else if (document.getElementById('sessionOverlay').classList.contains('open')) closeSessionOverlay();
+    else if (document.getElementById('workOrderOverlay').classList.contains('open')) closeWorkOrderOverlay();
+    else if (document.getElementById('inspectionLogModal').classList.contains('open')) closeInspectionLogModal();
   }
 });
 

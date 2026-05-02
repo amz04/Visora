@@ -39,13 +39,36 @@
     <!-- Left Panel Wrapper -->
     <div class="panel-left-wrapper">
       <div class="panel-left" id="panelLeft">
-        <div class="panel-header">
-          <span class="panel-header-title">Maintenance Log</span>
-          <button class="panel-icon-btn" title="Filter">
-            <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i>
-          </button>
+
+        <!-- Top half: Maintenance Log -->
+        <div class="panel-section">
+          <div class="panel-header">
+            <span class="panel-header-title">Maintenance Log</span>
+            <button class="panel-icon-btn" title="Filter">
+              <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+          <div class="log-scroll" id="logScroll"></div>
         </div>
-        <div class="log-scroll" id="logScroll"></div>
+
+        <div class="panel-section-divider"></div>
+
+        <!-- Bottom half: Inspection Log -->
+        <div class="panel-section panel-section--btn">
+          <div class="panel-header">
+            <span class="panel-header-title">Inspection Log</span>
+            <button class="panel-icon-btn" title="View">
+              <i data-lucide="clipboard-list" style="width:14px;height:14px;"></i>
+            </button>
+          </div>
+          <div class="insp-btn-container">
+            <button class="insp-log-btn" id="viewInspectionLogBtn">
+              <i data-lucide="clipboard-list" style="width:15px;height:15px;"></i>
+              View Inspection Log
+            </button>
+          </div>
+        </div>
+
       </div>
       <button class="panel-collapse-btn" id="collapseBtn" title="Collapse panel">
         <i data-lucide="chevron-left" style="width:14px;height:14px;" id="collapseIcon"></i>
@@ -210,6 +233,36 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Inspection Log Modal -->
+  <div class="insp-modal-backdrop" id="inspectionLogModal">
+    <div class="insp-modal-card">
+      <div class="insp-modal-header">
+        <span class="insp-modal-title">Inspection Log</span>
+        <button class="overlay-close-btn" id="inspModalClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div class="insp-equipment-grid" id="inspEquipmentGrid"></div>
+      <div class="insp-table-wrap" id="inspTableWrap"></div>
+    </div>
+  </div>
+
+  <!-- Work Order Detail Overlay -->
+  <div class="overlay-backdrop" id="workOrderOverlay">
+    <div class="session-overlay wo-overlay">
+      <div class="session-overlay-header">
+        <button class="overlay-back-btn" id="woOverlayBack">
+          <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
+          Back
+        </button>
+        <button class="overlay-close-btn" id="woOverlayClose">
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+      </div>
+      <div class="session-overlay-body" id="woOverlayBody"></div>
     </div>
   </div>
 
