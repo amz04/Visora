@@ -21,7 +21,7 @@ Visora solves this by combining an AR-recorded expert knowledge base with a per-
 ## Pages
 
 ### Homepage — Machine Grid
-Browse all available machines in a card-based grid. Each card shows the machine name, department, last service date, and live operational status (green / yellow / red). Click a card to see full details in a popup, or hit **Ask AI** directly to jump straight into a conversation about that machine.
+Browse all available machines in a card-based grid. Each card shows the machine name, department, last service date, and live operational status (green / yellow / red). Use the search bar or department / status / type filters to narrow the list. Click a card to open a detail popup, or hit **Ask AI** directly to jump straight into a conversation about that machine.
 
 ### Machine Details Page
 The core of the platform. Three panels working together:
@@ -31,6 +31,8 @@ The core of the platform. Three panels working together:
 - **Middle — AI Chatbot (RAG):** The hero of the page. A machine-specialized AI assistant powered by a full RAG pipeline backed by a FastAPI server. It reads the machine's PDF manual and maintenance reports, chunks and embeds them into a vector database, then answers questions by retrieving the most relevant passages and generating a grounded response via an LLM. Answers include a collapsible **References** section listing every source used — each reference card shows the document, page number, and a preview excerpt. Clicking a card opens the actual PDF at that exact page in an inline viewer.
 
 - **Right — Video Recordings:** A library of all expert repair videos for this machine. Each card shows a thumbnail, session title, recording technician, duration, and date. Grouped by month to stay navigable as the library grows.
+
+The status badge in the chat header is a clickable dropdown — switch between Operational, Under Maintenance, and Out of Service. Changes persist via `localStorage` and reflect across the homepage grid.
 
 ### Video Preview Overlay
 Opens on top of the machine page without losing your place. The video player occupies the left side with a custom dark-themed control bar and AI-generated chapter markers on the timeline — click any chapter dot to jump to that moment. The right side has three tabs: **Overview** (AI summary, outcome, downtime), **Steps** (timestamped steps that seek the video when clicked), and **Resources** (tools, parts, and manual references). Related sessions sit at the bottom for natural continuation.
@@ -109,7 +111,7 @@ No frontend frameworks or build tools.
 ## File Structure
 
 ```
-visora/
+Visora-Oracle/
 ├── index.html                  # Homepage — machine grid
 ├── machine.html                # Machine details — chatbot + sessions + videos
 ├── style.css                   # Global styles and design tokens
@@ -118,9 +120,10 @@ visora/
 ├── rag.js                      # RAG HTTP client — defines RAG_API_BASE, calls FastAPI backend
 ├── data.js                     # All hardcoded machines, sessions, and video data
 ├── .env                        # Server-side secrets: GROQ_API_KEY (gitignored)
+├── .env.example                # Example env file for new contributors
 ├── requirements.txt            # Python dependencies
 ├── app/
-│   ├── main.py                 # FastAPI app — mounts router and serves static files
+│   ├── main.py                 # FastAPI app — auto-ingest on startup, serves static files
 │   ├── config.py               # Server settings, document registry (machine → PDFs)
 │   ├── models.py               # Pydantic request/response models
 │   ├── routers/
@@ -147,7 +150,10 @@ visora/
 │   ├── machine1–5.jpg          # Machine card images (homepage)
 │   └── thumb1–5.jpg            # Video thumbnails
 └── videos/
-    └── video1–4.mp4
+    ├── CNC-video-1.mov
+    ├── CNC-video-2.mov
+    ├── cnc-milling.mp4
+    └── video4.mp4
 ```
 
 ---
@@ -155,8 +161,8 @@ visora/
 ## Running Locally
 
 ```bash
-git clone https://github.com/amz04/visora.git
-cd visora
+git clone https://github.com/amz04/Visora-Oracle.git
+cd Visora-Oracle
 ```
 
 ### 1. Install Python dependencies
